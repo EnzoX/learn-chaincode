@@ -155,7 +155,9 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.reject_trade(stub, args)
 	} else if function == "accept_trade"{
 		return t.accept_trade(stub, args)
-	}
+	} else if function == "store_caller"{
+        return t.store_caller(stub, args)
+    }
 
     return nil, errors.New("Received unknown function invocation: " + function)
 }
@@ -178,7 +180,9 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.read(stub, args)
 	}  else if function == "get_username" {			
 		return stub.ReadCertAttribute("username");
-	} 
+	}  else if function == "get_role" {
+        return stub.ReadCertAttribute("role");
+    } 
 
 	return nil, errors.New("Received unknown function query " + function)
 
@@ -328,6 +332,24 @@ func (t *SimpleChaincode) approve_trade(stub shim.ChaincodeStubInterface, args [
 	_, err  = t.save_changes(stub, inv)
 
 	if err != nil { fmt.Printf("APPROVE_TRADE: Error saving changes: %s", err); return nil, errors.New("Error saving changes") }
+
+	return nil, nil
+
+}
+
+func (t *SimpleChaincode) store_caller(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	username, err := stub.ReadCertAttribute("username");
+	if err != nil { return nil, errors.New("Couldn't get attribute 'username'. Error: " + err.Error()) }
+    
+    affiliation, err := stub.ReadCertAttribute("role");
+	if err != nil { return nil, errors.New("Couldn't get attribute 'role'. Error: " + err.Error()) }
+
+	err = stub.PutState("username", username)
+	if err != nil { return nil, errors.New("Error putting state with username") }
+
+	err = stub.PutState("role", affiliation)
+	if err != nil { return nil, errors.New("Error putting state with role") }
 
 	return nil, nil
 

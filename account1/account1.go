@@ -93,7 +93,6 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	} else if function == "transfer_balance" {									
 		return t.transfer_balance(stub, args)										
 	}
-	fmt.Errorf("invoke did not find func: " + function)					//error
 
 	return nil, errors.New("Received unknown function invocation: " + function)
 }
