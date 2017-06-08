@@ -182,6 +182,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return stub.ReadCertAttribute("username");
 	}  else if function == "get_role" {
         return stub.ReadCertAttribute("role");
+    }   else if function == "get_position" {
+        return stub.ReadCertAttribute("position");
     } 
 
 	return nil, errors.New("Received unknown function query " + function)
