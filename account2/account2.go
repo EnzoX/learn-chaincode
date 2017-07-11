@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/hyperledger/fabric/core/util"
 
 	"errors"
 )
@@ -33,67 +32,62 @@ func main() {
 // ============================================================================================================================
 // Init Function - Called when the user deploys the chaincode
 // ============================================================================================================================
-func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-
-	_,args := stub.GetFunctionAndParameters()
+func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	var Aval int
 	var err error
 
 	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting a single integer")
+		return nil, errors.New("Incorrect number of arguments. Expecting 1")
 	}
 
 	// Initialize the chaincode
 	Aval, err = strconv.Atoi(args[0])
 	if err != nil {
-		return shim.Error("Expecting integer value for testing the blockchain network")
+		return nil, errors.New("Expecting integer value for testing the blockchain network")
 	}
 
 	// Write the state to the ledger, test the network
 	err = stub.PutState("test_key", []byte(strconv.Itoa(Aval)))	
 	if err != nil {
-		return shim.Error(err.Error())
+		return nil, err
 	}
 	
-	return shim.Success(nil)
+	return nil, nil
 }
 
 // ============================================================================================================================
 // Invoke - Called on chaincode invoke. Takes a function name passed and calls that function. Converts some
 //		    initial arguments passed to other things for use in the called function.
 // ============================================================================================================================
-func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
-	function, args := stub.GetFunctionAndParameters()
 	if function == "invoke" {
 		return t.invoke(stub, args)
 	} 
-
-	return shim.Success([]byte("Invalid invoke function name."))
+	return nil, errors.New("Received unknown function invocation: " + function)
 }
 
-func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
 
-	chaincodeName := args[0]
-	channelID := ""
+	chaincodeId := args[0]
 	f := "init_account"
 	invokeArgs := util.ToChaincodeArgs(f, "0000-1111-2222", "bob", "USD", "3500")
-	response := stub.InvokeChaincode(chaincodeName, invokeArgs, channelID)
-	if response.Status != shim.OK {
-		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error:%s", string(response.Payload))
+	response, err := stub.InvokeChaincode(chaincodeId, invokeArgs)
+	if err != nil {
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", err.Error())
 		fmt.Printf(errStr)
-		return shim.Error(errStr)
+		return nil, errors.New(errStr)
 	}
-
+	fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
 	err = stub.PutState("test_invoke", []byte("success"))
 	if err != nil {
-		return shim.Error(err.Error())
+		return nil, err
 	}
 
-	return response
+	return nil, nil
 
 }
 // ============================================================================================================================
