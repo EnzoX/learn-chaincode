@@ -98,6 +98,8 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 
 	if function == "read" {												
 		return t.read(stub, args)
+	} else if function == "query" {
+		return t.query(stub, args)
 	}
 	fmt.Println("query did not find func: " + function)						//error
 
@@ -123,4 +125,23 @@ func (t *SimpleChaincode) read(stub shim.ChaincodeStubInterface, args []string) 
 	}
 
 	return valAsbytes, nil												
+}
+
+func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+
+	chaincodeId := args[0]
+
+	f := "query"
+	queryArgs := util.ToChaincodeArgs(f, "0000-1111-2222")
+
+	response, err := stub.QueryChaincode(chaincodeId, queryArgs)
+	if err != nil {
+		errStr := fmt.Sprintf("Failed to query chaincode. Got error: %s", err.Error())
+		fmt.Printf(errStr)
+		return nil, errors.New(errStr)
+	}
+
+	return response, nil												
 }
