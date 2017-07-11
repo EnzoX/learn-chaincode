@@ -133,7 +133,7 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 
 	chaincodeId := args[0]
 
-	f := "query"
+	f := "read"
 	queryArgs := util.ToChaincodeArgs(f, "0000-1111-2222")
 
 	response, err := stub.QueryChaincode(chaincodeId, queryArgs)
