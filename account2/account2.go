@@ -8,6 +8,7 @@ import (
 	"github.com/hyperledger/fabric/core/util"
 
 	"errors"
+	"strings"
 )
 
 //==============================================================================================================================
@@ -62,19 +63,48 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 // ============================================================================================================================
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
-	if function == "invoke" {
-		return t.invoke(stub, args)
-	} 
+	if function == "init_account" {
+		return t.init_account(stub, args)
+	} else if function == "transfer_balance" {									
+		return t.transfer_balance(stub, args)										
+	}
 	return nil, errors.New("Received unknown function invocation: " + function)
 }
 
-func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) init_account(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
 
+	if len(args) != 5 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 5")
+	}
+
+	//input sanitation
+	if len(args[0]) <= 0 {
+		return nil, errors.New("1st argument must be a non-empty string")
+	}
+	if len(args[1]) <= 0 {
+		return nil, errors.New("2nd argument must be a non-empty string")
+	}
+	if len(args[2]) <= 0 {
+		return nil, errors.New("3rd argument must be a non-empty string")
+	}
+	if len(args[3]) <= 0 {
+		return nil, errors.New("4th argument must be a non-empty string")
+	}
+	if len(args[4]) <= 0 {
+		return nil, errors.New("5th argument must be a non-empty string")
+	}
+
 	chaincodeId := args[0]
+
+	accountNo := args[1]
+	legalEntity := strings.ToLower(args[2])
+	currency := args[3]
+	amount := args[4]
+
 	f := "init_account"
-	invokeArgs := util.ToChaincodeArgs(f, "0000-1111-2222", "bob", "USD", "3500")
+	invokeArgs := util.ToChaincodeArgs(f, accountNo, legalEntity, currency, amount)
 	response, err := stub.InvokeChaincode(chaincodeId, invokeArgs)
 	if err != nil {
 		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", err.Error())
@@ -82,10 +112,51 @@ func (t *SimpleChaincode) invoke(stub shim.ChaincodeStubInterface, args []string
 		return nil, errors.New(errStr)
 	}
 	fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
-	err = stub.PutState("test_invoke", []byte("success"))
+	err = stub.PutState(accountNo, []byte("success"))
 	if err != nil {
 		return nil, err
 	}
+
+	return nil, nil
+
+}
+
+func (t *SimpleChaincode) transfer_balance(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+
+	if len(args) != 4 {
+		return nil, errors.New("Incorrect number of arguments. Expecting 4")
+	}
+
+	//input sanitation
+	if len(args[0]) <= 0 {
+		return nil, errors.New("1st argument must be a non-empty string")
+	}
+	if len(args[1]) <= 0 {
+		return nil, errors.New("2nd argument must be a non-empty string")
+	}
+	if len(args[2]) <= 0 {
+		return nil, errors.New("3rd argument must be a non-empty string")
+	}
+	if len(args[3]) <= 0 {
+		return nil, errors.New("4th argument must be a non-empty string")
+	}
+
+	chaincodeId := args[0]
+	accountFrom := args[1]
+	accountTo := args[2]
+	amount := args[3]
+
+	f := "transfer_balance"
+	invokeArgs := util.ToChaincodeArgs(f, accountFrom, accountTo, amount)
+	response, err := stub.InvokeChaincode(chaincodeId, invokeArgs)
+	if err != nil {
+		errStr := fmt.Sprintf("Failed to invoke chaincode. Got error: %s", err.Error())
+		fmt.Printf(errStr)
+		return nil, errors.New(errStr)
+	}
+	fmt.Printf("Invoke chaincode successful. Got response %s", string(response))
 
 	return nil, nil
 
@@ -132,9 +203,10 @@ func (t *SimpleChaincode) query(stub shim.ChaincodeStubInterface, args []string)
 	var err error
 
 	chaincodeId := args[0]
+	accountNo := args[1]
 
 	f := "read"
-	queryArgs := util.ToChaincodeArgs(f, "0000-1111-2222")
+	queryArgs := util.ToChaincodeArgs(f, accountNo)
 
 	response, err := stub.QueryChaincode(chaincodeId, queryArgs)
 	if err != nil {
