@@ -39,7 +39,6 @@ type Invoice struct {
 	Status           string `json:"status"`
 	Financier            string `json:"financier"`
 	Discount         string `json:"discount"`
-
 }
 
 
