@@ -433,7 +433,7 @@ func (t *SimpleChaincode) transfer_balance(stub shim.ChaincodeStubInterface, arg
 	json.Unmarshal(bytes, &transIndex)					
 	
 	//append the index 
-	transIndex = append(transIndex, string(key))	
+	transIndex = append(transIndex, strconv.Itoa(key))	
 	jsonAsBytes, _ := json.Marshal(transIndex)
 	err = stub.PutState(transIndexStr, jsonAsBytes)	
 
