@@ -112,6 +112,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.init_account(stub, args)
 	} else if function == "transfer_balance" {									
 		return t.transfer_balance(stub, args)										
+	} else if function == "deleteTransaction" {									
+		return t.deleteTransaction(stub, args)										
 	}
 
 	return nil, errors.New("Received unknown function invocation: " + function)
@@ -416,7 +418,7 @@ func (t *SimpleChaincode) transfer_balance(stub shim.ChaincodeStubInterface, arg
 	key, err := strconv.Atoi(string(keyAsBytes))
 
 	//build the transaction json string 
-	str := `{"key": "` + string(key) + `", "accountFrom": "` + args[0] + `", "accountTo": "` + args[1] + `", "amount": "` + args[2] + `"}`
+	str := `{"key": "` + strconv.Itoa(key) + `", "accountFrom": "` + args[0] + `", "accountTo": "` + args[1] + `", "amount": "` + args[2] + `"}`
 	err = stub.PutState(string(key), []byte(str))					
 	if err != nil {
 		return nil, err
