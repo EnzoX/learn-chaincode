@@ -76,7 +76,7 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 		return nil, err
 	}
 
-	err = stub.PutState(countIndex, []byte("0"))
+	err = stub.PutState(countIndex, []byte(strconv.Itoa(0)))
 	if err != nil {
 		return nil, err
 	}
@@ -415,10 +415,10 @@ func (t *SimpleChaincode) transfer_balance(stub shim.ChaincodeStubInterface, arg
 	}
 
 	keyAsBytes, err := stub.GetState(countIndex)
-	key, err := strconv.ParseInt(string(keyAsBytes),10,64)
+	key, err := strconv.Atoi(string(keyAsBytes))
 	
 	//build the transaction json string 
-	str := `{"key": "` + strconv.FormatInt(key, 10) + `", "accountFrom": "` + args[0] + `", "accountTo": "` + args[1] + `", "amount": "` + args[2] + `"}`
+	str := `{"key": "` + strconv.Itoa(key) + `", "accountFrom": "` + args[0] + `", "accountTo": "` + args[1] + `", "amount": "` + args[2] + `"}`
 	err = stub.PutState(string(key), []byte(str))					
 	if err != nil {
 		return nil, err
@@ -433,12 +433,12 @@ func (t *SimpleChaincode) transfer_balance(stub shim.ChaincodeStubInterface, arg
 	json.Unmarshal(bytes, &transIndex)					
 	
 	//append the index 
-	transIndex = append(transIndex, strconv.FormatInt(key, 10))
+	transIndex = append(transIndex, strconv.Itoa(key))
 	jsonAsBytes, _ := json.Marshal(transIndex)
 	err = stub.PutState(transIndexStr, jsonAsBytes)	
 
 	key = key + 1
-	err = stub.PutState(countIndex, []byte(strconv.FormatInt(key, 10)))
+	err = stub.PutState(countIndex, []byte(strconv.Itoa(key)))
 	if err != nil {
 		return nil, err
 	}
