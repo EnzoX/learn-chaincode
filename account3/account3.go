@@ -415,7 +415,7 @@ func (t *SimpleChaincode) transfer_balance(stub shim.ChaincodeStubInterface, arg
 	}
 
 	keyAsBytes, err := stub.GetState(countIndex)
-	key, err := strconv.Atoi(string(keyAsBytes))
+	key,err := strconv.Atoi(string(keyAsBytes))
 	
 	//build the transaction json string 
 	str := `{"key": "` + strconv.Itoa(key) + `", "accountFrom": "` + args[0] + `", "accountTo": "` + args[1] + `", "amount": "` + args[2] + `"}`
