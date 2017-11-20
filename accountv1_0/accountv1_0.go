@@ -169,7 +169,7 @@ func (t *SimpleChaincode) delete(stub shim.ChaincodeStubInterface, args []string
 // ============================================================================================================================
 // Write - directly write a variable into chaincode world state
 // ============================================================================================================================
-func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var name, value string 
 	var err error
 
@@ -189,7 +189,7 @@ func (t *SimpleChaincode) write(stub shim.ChaincodeStubInterface, args []string)
 // ============================================================================================================================
 // Init account - create a new account, store into chaincode world state, and then append the account index
 // ============================================================================================================================
-func (t *SimpleChaincode) init_account(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SimpleChaincode) init_account(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	var err error
 
 	//       0        1      2      3
